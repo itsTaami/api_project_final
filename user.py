@@ -71,12 +71,12 @@ async def search_films(
         raise HTTPException(500, "Failed to search films") from e
 
 @router.post("/favorites/{user_id}/{film_id}", status_code=201)
-async def add_favorite_song(user_id: int, song_id: int):
+async def add_favorite_song(user_id: int, film_id: int):
     """Add a song to user's favorites """
     try:
 
         song = supabase.table("films").select("*").eq("id", film_id).execute()
-        if not song.data:
+        if not film.data:
             raise HTTPException(404, "Film not found")
             
 
