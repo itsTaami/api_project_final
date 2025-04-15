@@ -23,18 +23,32 @@ async def get_all_films():
         raise HTTPException(status_code=500, detail="Failed to fetch films")
         
 @router.get("/search", response_model=List[FilmResponse])
-async def search_films(title: str = Query(None), rt_score: int = Query(None), release_date: int = Query(None)):
+async def search_films(
+    id: str = Query(None),
+    title: str = Query(None),
+    rt_score: int = Query(None),
+    release_date: int = Query(None)
+):
     try:
         query = supabase.table("films").select("*")
+        
+        if id:
+            query = query.eq("id", id)
         if title:
             query = query.ilike("title", f"%{title}%")
-        if release_date is not None:
-            query = query.ilike("release_date", f"%{release_date}%")
+        if rt_score:
+            query = query.eq("rt_score", rt_score)
+        if release_date:
+            query = query.eq("release_date", release_date)
+
         result = query.execute()
+
         if not hasattr(result, 'data'):
             logger.error("Invalid response format from Supabase")
             raise HTTPException(500, "Invalid server response")
+
         return result.data or []
+
     except Exception as e:
         logger.exception("Failed to search films")
         raise HTTPException(500, "Failed to search films") from e
