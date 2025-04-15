@@ -7,6 +7,21 @@ import logging
 router = APIRouter(prefix="/admin", tags=["admin"])
 logger = logging.getLogger(__name__)
 
+@router.get("/", response_model=List[FilmResponse])
+async def get_all_films():
+    """Retrieve all films"""
+    try:
+        result = supabase.table("films").select("*").execute()
+        
+        if not hasattr(result, 'data'):
+            raise HTTPException(status_code=500, detail="Invalid server response")
+        
+        return result.data or []
+    
+    except Exception as e:
+        logger.exception("Failed to fetch films")
+        raise HTTPException(status_code=500, detail="Failed to fetch films")
+        
 @router.get("/search", response_model=List[FilmResponse])
 async def search_films(id: str = Query(None), title: str = Query(None), rt_score: int = Query(None), release_date: int = Query(None)):
     try:
