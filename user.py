@@ -87,9 +87,10 @@ async def add_favorite_film(user_id: int, film_id: int):
         existing = supabase.table("favorites").select("*").eq("user_id", user_id).eq("film_id", film_id).execute()
         if existing.data:
             raise HTTPException(400, "Film already in favorites")
+            result = supabase.table("favorites").insert({"user_id": user_id, "film_id": film_id})
 
         # Insert into favorites
-result = supabase.table("favorites").insert({"user_id": user_id, "film_id": film_id})
+        
         
         # Debug log for response
         print(f"Insert result: {result}")
