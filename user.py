@@ -73,19 +73,32 @@ async def search_films(
 @router.post("/favorites/{user_id}/{film_id}", status_code=201)
 async def add_favorite_film(user_id: int, film_id: int):
     try:
+        # Query film
         film = supabase.table("films").select("*").eq("id", film_id).execute()
         if not film.data:
             raise HTTPException(404, "Film not found")
+
+        # Query user
         user = supabase.table("users").select("*").eq("id", user_id).execute()
         if not user.data:
             raise HTTPException(404, "User not found")
+
+        # Check if the film is already in the user's favorites
         existing = supabase.table("favorites").select("*").eq("user_id", user_id).eq("film_id", film_id).execute()
         if existing.data:
             raise HTTPException(400, "Film already in favorites")
+
+        # Insert into favorites
         result = supabase.table("favorites").insert({"user_id": user_id, "film_id": film_id}).execute()
+        
+        # Debug log for response
+        print(f"Insert result: {result}")
+
         if not result.data:
             raise HTTPException(400, "Failed to add favorite")
+
         return {"message": "Film added to favorites"}
+
     except HTTPException:
         raise
     except Exception as e:
