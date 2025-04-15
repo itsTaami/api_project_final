@@ -71,39 +71,39 @@ async def search_films(
         raise HTTPException(500, "Failed to search films") from e
 
 @router.post("/favorites/{user_id}/{film_id}", status_code=201)
-async def add_favorite_film(user_id: int, film_id: int):
+async def add_favorite_song(user_id: int, song_id: int):
+    """Add a song to user's favorites """
     try:
-        # Query film
-        film = supabase.table("films").select("*").eq("id", film_id).execute()
-        if not film.data:
-            raise HTTPException(404, "Film not found")
 
-        # Query user
+        song = supabase.table("films").select("*").eq("id", film_id).execute()
+        if not song.data:
+            raise HTTPException(404, "Film not found")
+            
+
         user = supabase.table("users").select("*").eq("id", user_id).execute()
         if not user.data:
             raise HTTPException(404, "User not found")
+            
 
-        # Check if the film is already in the user's favorites
         existing = supabase.table("favorites").select("*").eq("user_id", user_id).eq("film_id", film_id).execute()
         if existing.data:
             raise HTTPException(400, "Film already in favorites")
-            result = supabase.table("favorites").insert({"user_id": user_id, "film_id": film_id})
+            
 
-        # Insert into favorites
+        result = supabase.table("favorites").insert({
+            "user_id": user_id,
+            "film_id": film_id
+        }).execute()
         
-        
-        # Debug log for response
-        print(f"Insert result: {result}")
-
         if not result.data:
             raise HTTPException(400, "Failed to add favorite")
-
+            
         return {"message": "Film added to favorites"}
-
+        
     except HTTPException:
         raise
     except Exception as e:
-        logger.exception(f"Failed to add favorite film {film_id} for user {user_id}")
+        logger.exception(f"Failed to add favorite song {film_id} for user {user_id}")
         raise HTTPException(500, "Failed to add favorite film") from e
 
 @router.get("/favorites/{user_id}", response_model=List[FilmResponse])
